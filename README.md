@@ -1,9 +1,7 @@
 # Závěrečný projekt
-Cílem je jednoduchá hra, kterou se bude učit hrát AI (neural network) - celé v Pythonu.
+Cílem je jednoduchá hra, kterou se bude učit hrát neuronová síť (celé v Pythonu).
 Na hru bych asi použil knihovnu arcade / pygame, na AI asi TensorFlow / neat-python...
-Hru ještě nemám vymyšlenou úplně, ale šlo by asi o něco jako FlappyBird / primitivní 2D střílečka...
-Podle typu hry - jestli tam bude víc hráčů - AI by buď hrála sama a člověk by se jenom díval, nebo by člověk hrál proti AI
-Kdyby to byl ten FlappyBird (nebo něco jiného jenom pro jednoho hráče) - AI by se učila, popř. by šlo hrát taky a zkusit se dostat dál.
-
+Hru ještě nemám vymyšlenou úplně, ale šlo by asi o něco jako FlappyBird / primitivní 2D střílečka nebo něco takového...
+AI by se učila a člověk by se díval / mohl by si zahrát zároveň s AI a porovná se skóre NEBO když to bude multiplayer - hrálo by se člověk vs AI / AI vs AI
 
 
