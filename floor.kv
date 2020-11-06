@@ -1,0 +1,9 @@
+# Třída Floor: vykreslí texturu do obdélníku (podle rozměrů)
+<Floor>:
+    size: self.width, 100
+    pos: self.pos
+    canvas:
+        Rectangle:
+            pos: self.pos
+            size: self.width, self.size[1]
+            texture: self.tex

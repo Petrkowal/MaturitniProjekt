@@ -1,0 +1,14 @@
+# Třída Bird: Vykresluje ptáka
+<Bird>
+    size_hint: None, None
+    # Rozměry na pevno (které se rovnají rozměrům textur)
+    size: 68, 48
+    # Středy v osách x, y
+    center_y: 200
+    center_x: 300
+    canvas:
+        # Vykreslí obrázek z source do obdélníka
+        Rectangle:
+            pos: self.pos
+            size: 68, 48
+            source: self.source

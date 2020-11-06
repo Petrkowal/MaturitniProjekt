@@ -1,0 +1,24 @@
+# Třída pipe - vykreslí trubky
+<Pipe>:
+    size_hint: None, None
+    # Nastaví pozice doleva dolů (odkud se vykresluje)
+    # V závislosti na y souřadnici středu
+    pos: self.pos[0], self.pipe_center - self.GAP_SIZE / 2.0 - self.pipe_body_texture.height
+    # Nastaví rozměry
+    size: self.pipe_body_texture.width, self.pipe_body_texture.height
+    canvas:
+        # Horní trubka
+        Rectangle:
+            # Nastaví rozměry obdélníku podle rozměrů textury
+            size: self.pipe_body_texture.width,self.pipe_body_texture.height
+            # Nastaví pos (bod, okdud se bude vykreslovat) podle pipe_center
+            pos: self.pos[0], self.pipe_center + self.GAP_SIZE / 2.0
+            # Vybere texturu
+            texture: self.pipe_body_texture
+            # Převrátí texturu
+            tex_coords: self.top_pipe_tex_coords
+        # Spodní trubka -> stejné jako horní (kromě převrácení)
+        Rectangle:
+            size: self.pipe_body_texture.width,self.pipe_body_texture.height
+            pos: self.pos[0], self.pipe_center - self.GAP_SIZE / 2.0 - self.pipe_body_texture.height
+            texture: self.pipe_body_texture
