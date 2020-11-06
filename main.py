@@ -1,6 +1,5 @@
 from kivy.app import App
 from kivy.config import Config
-from kivy.uix.widget import Widget
 from kivy.uix.floatlayout import FloatLayout
 from kivy.properties import ObjectProperty, ListProperty
 from kivy.core.window import Window
@@ -42,6 +41,11 @@ class FlappyBirdGame(FloatLayout):
         self.pipes = []
         # Měření času
         self.time = 0
+
+        # Keyboard
+        self._keyboard = Window.request_keyboard(self._keyboard_closed, self)
+        self._keyboard.bind(on_key_down=self._on_keyboard_down)
+
         # Přidá podlahu a pozadí (problémy s indexem ???)
         self.floor = Floor(True)
         self.add_widget(self.floor, 3000000)
@@ -50,6 +54,16 @@ class FlappyBirdGame(FloatLayout):
         # Přidá na začátek ptáky
         self.add_bird(20)
 
+    def _keyboard_closed(self):
+        self._keyboard.unbind(on_key_down=self._on_keyboard_down)
+        self._keyboard = None
+
+    def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
+        print(keycode)
+        if keycode[1] == 'w':
+            for b in self.birds:
+                b.jump()
+
     # Přidá počet ptáků podle parametru
     def add_bird(self, bird_count):
         for i in range(0, bird_count):
@@ -57,7 +71,7 @@ class FlappyBirdGame(FloatLayout):
             bird = Bird()
             # Pozice y na střed herní plochy
             # bird.center_y = (Window.height + 100 / 2)
-            bird.center_y = 150 + 30 * i
+            bird.center_y = 250 + 15 * i
             # Přidá objekt do listu objektů
             self.birds.append(bird)
             # Přidá widget
@@ -131,6 +145,7 @@ class FlappyBirdGame(FloatLayout):
         for bird in self.birds:
             # Pohyb textury
             bird.change_texture(dt)
+            bird.move(dt)
         # Později jako jiný Clock ... ???
         # Když je součet časů víc než 2s
         if self.time > 2:

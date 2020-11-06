@@ -21,6 +21,16 @@ class Bird(Image):
     alive = BooleanProperty(True)
     # score - počítá score
     score = NumericProperty(0)
+    # rychlost
+    vel = NumericProperty(0)
+    # Počet průbehu smyčkou od posledního skoku
+    tick_count = NumericProperty(0)
+    # Maximální rotace
+    MAX_ROT = NumericProperty(25)
+    # Rychlost rotace
+    ROT_VEL = NumericProperty(3)
+    # Úhel rotace
+    angle = NumericProperty(0)
 
     def __init__(self, bird_id=0, **kwargs):
         super(Bird, self).__init__(**kwargs)
@@ -37,7 +47,7 @@ class Bird(Image):
         # Nastavení score na 0
         self.score = 0
         # Načtení v2 -> list s cestami k obrázkům (pro Image - změní se source)
-        self.textures = [self.IMGD, self.IMGM, self.IMGU]
+        self.textures = [self.IMGD, self.IMGM, self.IMGU, self.IMGM]
         # Index aktuální textury
         self.texture_idx = 0
         # Zdroj pro texturu (přímo)
@@ -55,22 +65,52 @@ class Bird(Image):
                 Widget(pos=(p.pos[0], 0), size=(p.pipe_body_texture.width, p.pipe_center - p.GAP_SIZE / 2))) \
                 or self.collide_widget(Widget(pos=(p.pos[0], p.pipe_center + p.GAP_SIZE / 2), size=(
                 p.pipe_body_texture.width, Window.height - p.pipe_center - p.GAP_SIZE / 2))) \
-                or self.pos[0] <= 100:
+                or self.center_y <= 100 + self.height / 2:
             self.alive = False
             return True
         return False
 
-    # Změna obrázku ptáka - provizorní po dvou desetinách sekundy
+    # Změna obrázku
     def change_texture(self, dt):
         self.time += dt
         if self.time > 0.2:
-            self.texture_idx = self.texture_idx + 1 if self.texture_idx < 2 else 0
+            self.texture_idx = self.texture_idx + 1 if self.texture_idx < len(self.textures) - 1 else 0
             print(self.texture_idx)
             self.source = self.textures[self.texture_idx]
             self.time = 0
 
+    # Když proletěl trubkou -> score += 1
     def passed_pipe(self):
         self.score += 1
+
+    # Skok - nastavení počáteční rychlosti a resetování času od posledního skoku
+    def jump(self):
+        self.vel = 400
+        self.tick_count = 0
+
+    # Pohyb a rotace
+    def move(self, dt):
+        self.tick_count += 1
+
+        # změna souřadnice y podle vrhu svislého (s upravenými konstantami)
+        d = 2 * self.vel * dt - 20 * dt * (self.tick_count * 2 - 1)
+
+        # Jestli po přičtení d bude pořád na obrazovce, přičte d. Jinak nastaví pozici těsně pod okraj
+        self.center_y = self.center_y + d if self.center_y - d < Window.height - self.height / 2 else Window.height - self.height / 2 - 2
+
+        # Jestli letí nahoru
+        if d > 0:
+            # Nakloní se nahoru na max. úhel
+            if self.angle < self.MAX_ROT:
+                self.angle = self.MAX_ROT
+        # Pokud je úhel větší než 0, ale padá dolů
+        elif self.angle > 0:
+            # Mění úhel podle rychlosti
+            self.angle -= self.ROT_VEL
+        # Jinak dokud nesměřuje přímo dolů, rotuje poloviční rychlostí
+        else:
+            if self.angle > -90:
+                self.angle -= self.ROT_VEL / 2
 
     def __str__(self):
         return f"\n\n" \

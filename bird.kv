@@ -5,10 +5,14 @@
     size: 68, 48
     # Středy v osách x, y
     center_y: 200
-    center_x: 300
-    canvas:
-        # Vykreslí obrázek z source do obdélníka
-        Rectangle:
-            pos: self.pos
-            size: 68, 48
-            source: self.source
+    center_x: 500
+
+# Rotace (jenom obrázek)
+
+    canvas.before:
+        PushMatrix
+        Rotate:
+            angle: self.angle
+            origin: self.center
+    canvas.after:
+        PopMatrix
