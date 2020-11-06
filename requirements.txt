@@ -53,7 +53,7 @@ scipy@ file:///C:/ci/scipy_1597686737426/work
 six==1.15.0
 tensorboard@ file:///home/builder/ktietz/conda/conda-bld/tensorboard_1604313476433/work/tmp_pip_dir
 tensorboard-plugin-wit==1.6.0
-tensorflow==2.1.0
+tensorflow==2.1.2
 tensorflow-estimator==2.1.0
 tensorflow-gpu==2.3.1
 tensorflow-gpu-estimator==2.3.0
