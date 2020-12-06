@@ -2,6 +2,11 @@
 #:include floor.kv
 #:include bird.kv
 
+<Button>:
+    size_hint: None, None
+    size: 100, 50
+    pos: self.pos[0], 10
+
 # Trída FlappyBirdGame - zatím nevyužitá
 <FlappyBirdGame>:
     id: flappy_bird_game

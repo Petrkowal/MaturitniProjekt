@@ -9,6 +9,7 @@
 
 # Rotace (jenom obrázek)
 
+
     canvas.before:
         PushMatrix
         Rotate:
@@ -16,3 +17,6 @@
             origin: self.center
     canvas.after:
         PopMatrix
+        Color:
+            rgba: 1, 1, 1, 1
+

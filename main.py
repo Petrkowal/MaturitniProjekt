@@ -4,7 +4,10 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.properties import ObjectProperty, ListProperty
 from kivy.core.window import Window
 from kivy.clock import Clock
+from kivy.uix.button import Button
+
 from random import randint
+import time
 
 # Import třídy Pipe
 from pipe import Pipe
@@ -36,23 +39,19 @@ class FlappyBirdGame(FloatLayout):
         super(FlappyBirdGame, self).__init__(**kwargs)
         # Pole pro objekty
         self.birds = []
-        ### Zatím dělané pro self.birds -> později nahradit
         self.birds_alive = []
         self.pipes = []
         # Měření času
         self.time = 0
+        # Přidá podlahu a pozadí (problémy s indexem ???)
+        self.floor = None
+        self.bg = None
 
         # Keyboard
         self._keyboard = Window.request_keyboard(self._keyboard_closed, self)
         self._keyboard.bind(on_key_down=self._on_keyboard_down)
 
-        # Přidá podlahu a pozadí (problémy s indexem ???)
-        self.floor = Floor(True)
-        self.add_widget(self.floor, 3000000)
-        self.bg = Floor(False)
-        self.add_widget(self.bg, 4000000)
-        # Přidá na začátek ptáky
-        self.add_bird(20)
+        self.prepare()
 
     def _keyboard_closed(self):
         self._keyboard.unbind(on_key_down=self._on_keyboard_down)
@@ -61,7 +60,7 @@ class FlappyBirdGame(FloatLayout):
     def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
         print(keycode)
         if keycode[1] == 'w':
-            for b in self.birds:
+            for b in self.birds_alive:
                 b.jump()
 
     # Přidá počet ptáků podle parametru
@@ -73,19 +72,27 @@ class FlappyBirdGame(FloatLayout):
             # bird.center_y = (Window.height + 100 / 2)
             bird.center_y = 250 + 15 * i
             # Přidá objekt do listu objektů
-            self.birds.append(bird)
+            self.birds_alive.append(bird)
             # Přidá widget
             self.add_widget(bird, i)
             print(f"Bird{bird.size}, {bird.pos}")
+        self.birds = self.birds_alive
+
+    def kill_bird(self, bird):
+        self.birds_alive.remove(bird)
+        bird.color = [255, 1, 1, 1]
 
     # Odstraní ptáka
     def remove_bird(self, bird):
+        self.birds_alive.remove(bird)
         self.birds.remove(bird)
         self.remove_widget(bird)
-        # Když nezbývá žádný -
-        if len(self.birds) == 0:
+
+    def any_bird_alive(self):
+        if len(self.birds_alive) == 0:
             # Vypne aplikaci (zatím)
-            App.get_running_app().stop()
+            # App.get_running_app().stop()
+            self.restart()
 
     # Přidá trubku
     def add_pipe(self):
@@ -96,7 +103,7 @@ class FlappyBirdGame(FloatLayout):
         new_pipe.pipe_center = randint(250, Window.height - 150)
         print("New pipe")
         # Přidá trubku
-        self.add_widget(new_pipe, len(self.birds) + 1)
+        self.add_widget(new_pipe, len(self.birds) + 4)
         self.pipes.append(new_pipe)
 
     # Odstraní trubku
@@ -108,14 +115,64 @@ class FlappyBirdGame(FloatLayout):
     # Při kolizi ...
     def collision(self, bird):
         # Nechá odebrat ptáka
-        self.remove_bird(bird)
+        self.kill_bird(bird)
+        self.any_bird_alive()
 
     def passed(self, pipe):
         # volá metodu passed() dané trubky, která nastaví is_passed na True
         pipe.passed()
         # Každému přičte bod v passed_pipe()
-        for b in self.birds:
+        for b in self.birds_alive:
             b.passed_pipe()
+
+    # Restartuje hru
+    def restart(self):
+        self.stop()
+
+    def stop_btn(self, instance):
+        self.stop()
+
+    def stop(self):
+        self.birds_alive = []
+        self.pipes = []
+        self.clear_widgets()
+        Clock.unschedule(self.update)
+        self.prepare()
+
+    # Při zapnutí
+    def prepare(self):
+        # Přidá podlahu a pozadí (problémy s indexem ???)
+        self.floor = Floor(True)
+        self.add_widget(self.floor, 3000000)
+        self.bg = Floor(False)
+        self.add_widget(self.bg, 4000000)
+
+        self.time = 0
+
+        btn_run = Button(text='Run')
+        btn_run.pos[0] = 50
+        btn_run.bind(on_press=self.run)
+        self.add_widget(btn_run)
+
+        btn_stop = Button(text='Stop')
+        btn_stop.pos[0] = 200
+        btn_stop.bind(on_press=self.stop_btn)
+        self.add_widget(btn_stop)
+
+        btn_exit = Button(text='Exit')
+        btn_exit.pos[0] = Window.width - 150
+        btn_exit.bind(on_press=self.exit)
+        self.add_widget(btn_exit)
+
+    def exit(self, instance):
+        App.get_running_app().stop()
+
+    # Spustí hru
+    def run(self, instance):
+        self.restart()
+        # Přidá na začátek ptáky
+        self.add_bird(20)
+        Clock.schedule_interval(self.update, 1.0 / 60.0)
 
     # Hlavní smyčka, parametr dt (změna času od posledního průběhu)
     def update(self, dt):
@@ -129,7 +186,7 @@ class FlappyBirdGame(FloatLayout):
             # Pohne trubkou
             p.move()
             # A pro každého z ptáků
-            for b in self.birds:
+            for b in self.birds_alive:
                 # Kontrola kolize
                 if b.check_collision(p):
                     # Předá kolidujícího ptáka dál do self.collision
@@ -143,10 +200,12 @@ class FlappyBirdGame(FloatLayout):
                 self.remove_pipe(p)
         # Pro každého ptáka
         for bird in self.birds:
-            # Pohyb textury
-            bird.change_texture(dt)
-            bird.move(dt)
-        # Později jako jiný Clock ... ???
+            if bird in self.birds_alive:
+                # Pohyb textury
+                bird.change_texture(dt)
+                bird.move(dt)
+            else:
+                bird.dead_move()
         # Když je součet časů víc než 2s
         if self.time > 2:
             # Resetuje se součet
@@ -159,8 +218,7 @@ class MainApp(App):
 
     def build(self):
         game = FlappyBirdGame()
-        # Spouští smyčku frekvencí 60Hz
-        Clock.schedule_interval(game.update, 1.0 / 60.0)
+        # game.start()
         return game
 
 

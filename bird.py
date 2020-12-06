@@ -8,6 +8,9 @@ from kivy.core.window import Window
     Funkce:
         check_collision(self, p) - returnuje True / False + nastaví proměnnou alive na False
         change_texture(self, dt) - mění texturu
+        passed_pipe() - přidá score
+        jump() - skočí (reset času od skoku)
+        move(dt) - pohyb (padání / skok) a rotace podle toho
 """
 
 
@@ -31,6 +34,8 @@ class Bird(Image):
     ROT_VEL = NumericProperty(3)
     # Úhel rotace
     angle = NumericProperty(0)
+    # Červená barva
+    r = NumericProperty(1)
 
     def __init__(self, bird_id=0, **kwargs):
         super(Bird, self).__init__(**kwargs)
@@ -54,6 +59,8 @@ class Bird(Image):
         self.source = self.textures[0]
         # Proměnná pro sčítání času
         self.time = 0
+        self.r = 1
+        self.color = [1, 1, 1, 1]
 
     # Kontrola kolize, parametr p je widget pipe (trubka)
     def check_collision(self, p):
@@ -111,6 +118,9 @@ class Bird(Image):
         else:
             if self.angle > -90:
                 self.angle -= self.ROT_VEL / 2
+
+    def dead_move(self):
+        self.x -= 5
 
     def __str__(self):
         return f"\n\n" \
