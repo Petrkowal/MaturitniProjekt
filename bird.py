@@ -82,7 +82,6 @@ class Bird(Image):
         self.time += dt
         if self.time > 0.2:
             self.texture_idx = self.texture_idx + 1 if self.texture_idx < len(self.textures) - 1 else 0
-            print(self.texture_idx)
             self.source = self.textures[self.texture_idx]
             self.time = 0
 
@@ -100,7 +99,7 @@ class Bird(Image):
         self.tick_count += 1
 
         # změna souřadnice y podle vrhu svislého (s upravenými konstantami)
-        d = 2 * self.vel * dt - 20 * dt * (self.tick_count * 2 - 1)
+        d = 2 * self.vel * 1 / 60 - 20 * 1 / 60 * (self.tick_count * 2 - 1)
 
         # Jestli po přičtení d bude pořád na obrazovce, přičte d. Jinak nastaví pozici těsně pod okraj
         self.center_y = self.center_y + d if self.center_y - d < Window.height - self.height / 2 else Window.height - self.height / 2 - 2

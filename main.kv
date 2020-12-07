@@ -4,9 +4,23 @@
 
 <Button>:
     size_hint: None, None
-    size: 100, 50
+    size: 50, 40
     pos: self.pos[0], 10
 
-# Trída FlappyBirdGame - zatím nevyužitá
+<Textinput>:
+    size_hint: None, None
+    size: 50, 40
+    pos: self.pos[0], 10
+
+# LABEL OVERWRITES BUTTON
+<Label>:
+    size_hint: None, None
+    size: 50, 40
+    pos: self.pos[0], 10
+
+# Trída FlappyBirdGame
 <FlappyBirdGame>:
     id: flappy_bird_game
+
+# Objekty zde -> narušují indexy add_widget(widget, idx) - trubky se zobrazují před podlahou / zemí
+# Takže všechno jako třídy / v prepare zatím
