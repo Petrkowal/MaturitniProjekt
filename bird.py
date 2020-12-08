@@ -64,17 +64,22 @@ class Bird(Image):
 
     # Kontrola kolize, parametr p je widget pipe (trubka)
     def check_collision(self, p):
+        if self.center_y <= 100 + self.height / 2:
+            return True
         # Podmínka pro kolizi; je rozdělena na 3 části:
         # 1. kolize se spodní trubkou (rozděleně, protože v jednom widgetu jsou obě dvě)
         # 2. kolize s vrchní trubkou
         # 3. kolize se zemí
-        if self.collide_widget(
-                Widget(pos=(p.pos[0], 0), size=(p.pipe_body_texture.width, p.pipe_center - p.GAP_SIZE / 2))) \
-                or self.collide_widget(Widget(pos=(p.pos[0], p.pipe_center + p.GAP_SIZE / 2), size=(
-                p.pipe_body_texture.width, Window.height - p.pipe_center - p.GAP_SIZE / 2))) \
-                or self.center_y <= 100 + self.height / 2:
-            self.alive = False
-            return True
+
+        # if self.collide_widget(
+        #         Widget(pos=(p.pos[0], 0), size=(p.pipe_body_texture.width, p.pipe_center - p.GAP_SIZE / 2))) \
+        #         or self.collide_widget(Widget(pos=(p.pos[0], p.pipe_center + p.GAP_SIZE / 2), size=(
+        #         p.pipe_body_texture.width, Window.height - p.pipe_center - p.GAP_SIZE / 2))):
+        #     return True
+        if abs(self.center_x - p.center_x) < int(p.width / 2 + self.width / 2):
+            if self.center_y + int(self.height / 2) >= p.pipe_center + int(p.GAP_SIZE / 2) or \
+                    self.center_y - int(self.height / 2) <= p.pipe_center - int(p.GAP_SIZE / 2):
+                return True
         return False
 
     # Změna obrázku
@@ -99,7 +104,7 @@ class Bird(Image):
         self.tick_count += 1
 
         # změna souřadnice y podle vrhu svislého (s upravenými konstantami)
-        d = 2 * self.vel * 1 / 60 - 20 * 1 / 60 * (self.tick_count * 2 - 1)
+        d = 2 * self.vel * 1 / 70 - 20 * 1 / 70 * (self.tick_count * 2 - 1)
 
         # Jestli po přičtení d bude pořád na obrazovce, přičte d. Jinak nastaví pozici těsně pod okraj
         self.center_y = self.center_y + d if self.center_y - d < Window.height - self.height / 2 else Window.height - self.height / 2 - 2
