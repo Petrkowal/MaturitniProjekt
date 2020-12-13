@@ -15,6 +15,7 @@ import time
 from pipe import Pipe
 from floor import Floor
 from bird import Bird
+from ai import BirdAI
 
 """
     Třída FlappyBirdGame jako FloatLayout
@@ -39,6 +40,7 @@ class FlappyBirdGame(FloatLayout):
     MIN_WIDTH = 600
     MIN_HEIGHT = 800
     pipes_passed = NumericProperty(0)
+    FPS = 60.0
 
     def __init__(self, **kwargs):
         super(FlappyBirdGame, self).__init__(**kwargs)
@@ -46,16 +48,17 @@ class FlappyBirdGame(FloatLayout):
         self.birds = []
         self.pipes = []
         self.current_pipe = None
-        # Měření času
-        self.time = 0
+        self.paused = False
         # Přidá podlahu a pozadí (problémy s indexem ???)
         self.floor = None
         self.bg = None
-        self.population = 20
+        self.population = 2
+        self.birds_alive = 2
         self.pipes_passed = 0
         self.score_label = None
         self.population_input = None
         Window.bind(on_resize=self.on_window_resize)
+        self.bird_ai = None
 
         self.prepare()
 
@@ -91,6 +94,7 @@ class FlappyBirdGame(FloatLayout):
             print(f"Bird{bird.size}, {bird.pos}")
 
     def kill_bird(self, bird):
+        self.birds_alive -= 1
         bird.alive = False
         bird.color = [255, 1, 1, 1]
 
@@ -119,7 +123,7 @@ class FlappyBirdGame(FloatLayout):
         print("New pipe")
         print(new_pipe)
         # Přidá trubku
-        self.add_widget(new_pipe, len(self.birds) + 8)
+        self.add_widget(new_pipe, len(self.birds) + 9)
         self.pipes.append(new_pipe)
 
     # Odstraní trubku
@@ -142,7 +146,7 @@ class FlappyBirdGame(FloatLayout):
                 self.current_pipe = p
                 break
         self.pipes_passed += 1
-        self.score_label.text = f"Score: {self.pipes_passed}"
+        self.score_label.text = f"Score: {self.pipes_passed} Birds alive: {self.birds_alive}"
         # Každému přičte bod v passed_pipe()
         for b in self.birds:
             b.passed_pipe()
@@ -154,9 +158,7 @@ class FlappyBirdGame(FloatLayout):
     def stop(self, *args):
         self.birds = []
         self.pipes = []
-        # self.clear_widgets()
         Clock.unschedule(self.update)
-        # self.prepare()
 
     # Při zapnutí
     def prepare(self):
@@ -170,8 +172,7 @@ class FlappyBirdGame(FloatLayout):
         self.add_widget(self.floor, 3000000)
         self.bg = Floor(False)
         self.add_widget(self.bg, 4000000)
-
-        self.time = 0
+        self.paused = False
 
         btn_run = Button(text='Start')
         btn_run.pos[0] = 25
@@ -202,10 +203,19 @@ class FlappyBirdGame(FloatLayout):
         btn_set.bind(on_press=self.submit)
         self.add_widget(btn_set)
 
-        self.score_label = Label(text=f"Score: {self.pipes_passed}", font_size=40, color=(0, 0, 0, 1))
+        btn_pause = Button(text='Pause')
+        btn_pause.pos[0] = 500
+        btn_pause.bind(on_press=self.pause)
+        self.add_widget(btn_pause)
+
+        self.score_label = Label(text=f"Score: {self.pipes_passed} Birds alive: {self.birds_alive}", font_size=40,
+                                 color=(0, 0, 0, 1))
         self.score_label.pos[0] = int(Window.width / 2)
         self.score_label.pos[1] = int(Window.height - 100 - self.score_label.size[1])
         self.add_widget(self.score_label)
+
+    def create_ai(self):
+        self.bird_ai = BirdAI(Window.height, Window.width, 48)
 
     def submit(self, *args):
         if int(self.population_input.text) < 1:
@@ -214,35 +224,46 @@ class FlappyBirdGame(FloatLayout):
             self.population = 100
         else:
             self.population = int(self.population_input.text)
+            self.birds_alive = self.population
         self.stop()
 
-    def exit(self, instance):
+    def exit(self, *args):
         App.get_running_app().stop()
 
+    def pause(self, *args):
+        if self.pause:
+            Clock.unschedule(self.update)
+        if self.pause is False:
+            self.schedule_int()
+
     # Spustí hru
-    def run(self, instance):
+    def run(self, *args):
         self.restart()
         self.prepare()
+        if not self.bird_ai:
+            training_ai_label = Label(text="Training AI, may take some time...", font_size=40, color=(0, 0, 0, 1))
+            training_ai_label.pos = (Window.width / 2, Window.height / 2)
+            self.add_widget(training_ai_label)
+            self.create_ai()
+            self.remove_widget(training_ai_label)
         # Přidá na začátek ptáky
         self.add_bird(self.population)
-        Clock.schedule_interval(self.update, 1.0 / 60.0)
+        self.schedule_int()
 
-    # Hlavní smyčka, parametr dt (změna času od posledního průběhu)
-    def update(self, dt):
+    def schedule_int(self):
+        Clock.schedule_interval(self.update, 1.0 / self.FPS)
+
+    def update(self, *args):
         if len(self.pipes):
             if self.pipes[-1].pos[0] < Window.width + self.pipes[0].width - 600:
-                # Resetuje se součet
-                self.time = 0
                 # Přidá trubku
                 self.add_pipe()
         else:
             self.add_pipe()
             self.current_pipe = self.pipes[0]
-        # Součet času
-        self.time += dt
         # Scroll pozadí a podlahy
-        self.floor.scroll(1 / 60)
-        self.bg.scroll(1 / 60)
+        self.floor.scroll(1 / self.FPS)
+        self.bg.scroll(1 / self.FPS)
         # Pro každou z trubek:
         for p in self.pipes:
             # Pohne trubkou
@@ -258,16 +279,23 @@ class FlappyBirdGame(FloatLayout):
         # Pro každého ptáka
         for bird in self.birds:
             if bird.alive:
+
+                data = [bird.center_y,
+                        self.current_pipe.x - bird.x + bird.width,
+                        self.current_pipe.pipe_center - self.current_pipe.GAP_SIZE / 2,
+                        self.current_pipe.pipe_center + self.current_pipe.GAP_SIZE / 2]
+                if self.bird_ai.predict(data) > 0.5:
+                    bird.jump()
+
                 # Pohyb textury
-                bird.change_texture(dt)
-                bird.move(dt)
+                bird.change_texture()
+                bird.move()
                 if bird.check_collision(self.current_pipe):
                     # Předá kolidujícího ptáka dál do self.collision
                     self.collision(bird)
 
             else:
                 bird.dead_move()
-
 
 class MainApp(App):
 

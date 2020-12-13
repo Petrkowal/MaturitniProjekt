@@ -2,12 +2,13 @@ from kivy.uix.widget import Widget
 from kivy.properties import BooleanProperty, NumericProperty
 from kivy.uix.image import Image
 from kivy.core.window import Window
+from setuptools import sic
 
 """
     Třída Bird jako obrázek kvůli práci s texturou, parametr id
     Funkce:
         check_collision(self, p) - returnuje True / False + nastaví proměnnou alive na False
-        change_texture(self, dt) - mění texturu
+        change_texture(self) - mění texturu
         passed_pipe() - přidá score
         jump() - skočí (reset času od skoku)
         move(dt) - pohyb (padání / skok) a rotace podle toho
@@ -61,6 +62,7 @@ class Bird(Image):
         self.time = 0
         self.r = 1
         self.color = [1, 1, 1, 1]
+        self.tick_count = 0
 
     # Kontrola kolize, parametr p je widget pipe (trubka)
     def check_collision(self, p):
@@ -83,8 +85,8 @@ class Bird(Image):
         return False
 
     # Změna obrázku
-    def change_texture(self, dt):
-        self.time += dt
+    def change_texture(self):
+        self.time += 1 / 60
         if self.time > 0.2:
             self.texture_idx = self.texture_idx + 1 if self.texture_idx < len(self.textures) - 1 else 0
             self.source = self.textures[self.texture_idx]
@@ -96,15 +98,33 @@ class Bird(Image):
 
     # Skok - nastavení počáteční rychlosti a resetování času od posledního skoku
     def jump(self):
-        self.vel = 400
+        self.vel = 40
         self.tick_count = 0
 
     # Pohyb a rotace
-    def move(self, dt):
+    def move(self):
         self.tick_count += 1
 
-        # změna souřadnice y podle vrhu svislého (s upravenými konstantami)
-        d = 2 * self.vel * 1 / 70 - 20 * 1 / 70 * (self.tick_count * 2 - 1)
+        # změna souřadnice y (upravená kvadratická funkce)
+        # d = 2 * self.vel * 1 / 70 - 20 * 1 / 70 * (self.tick_count * 2 - 1)
+        # d = -(4 / 7) * self.tick_count + 2 / 7 * self.vel + 2 / 7
+        d = -4 * self.tick_count + 2 * self.vel + 2
+        d /= 7
+        # Maximum = y + 58
+        # Možné y pro skok (ai - if) -> min --- max:
+        # Min: bird.y - bird.height < self.current_pipe.pipe_center - self.current_pipe.GAP_SIZE / 2 + 20
+        # Max: bird.y < self.current_pipe.pipe_center + self.current_pipe.GAP_SIZE / 2 - 58 - bird.height - 60
+        # Min: bird.y < pipe.center - 80
+        # Max: bird.y < pipe.center - 66
+        # Jump => pipe.center -73 +- 7
+
+        # Náročnější - (a nahoru, b nahoru):
+        # A = 4 * 0.175
+        # B = 2 * 0.5
+        # d = -(2 / 7) * self.tick_count + 2 * self.vel / 7 + 2 / 7
+
+        # d = -2 * self.tick_count + 2* self.vel + 2
+        # d /= 7
 
         # Jestli po přičtení d bude pořád na obrazovce, přičte d. Jinak nastaví pozici těsně pod okraj
         self.center_y = self.center_y + d if self.center_y - d < Window.height - self.height / 2 else Window.height - self.height / 2 - 2
