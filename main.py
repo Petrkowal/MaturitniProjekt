@@ -297,6 +297,7 @@ class FlappyBirdGame(FloatLayout):
             else:
                 bird.dead_move()
 
+
 class MainApp(App):
 
     def build(self):
