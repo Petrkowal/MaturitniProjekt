@@ -48,7 +48,7 @@ class FlappyBirdGame(FloatLayout):
         self.birds = []
         self.pipes = []
         self.current_pipe = None
-        self.paused = False
+        self.player_control = False
         # Přidá podlahu a pozadí (problémy s indexem ???)
         self.floor = None
         self.bg = None
@@ -77,7 +77,8 @@ class FlappyBirdGame(FloatLayout):
         print(keycode)
         if keycode[1] == 'w':
             for b in self.birds:
-                b.jump()
+                if b.human:
+                    b.jump()
 
     # Přidá počet ptáků podle parametru
     def add_bird(self, bird_count):
@@ -87,6 +88,11 @@ class FlappyBirdGame(FloatLayout):
             # Pozice y na střed herní plochy
             # bird.center_y = (Window.height + 100 / 2)
             bird.center_y = 250 + 15 * i
+            if i == 0 and self.player_control:
+                bird.human = True
+                bird.color = [1, 1, 1, 1]
+            if i != 0 and self.player_control:
+                bird.color = [1, 1, 1, 0.5]
             # Přidá objekt do listu objektů
             self.birds.append(bird)
             # Přidá widget
@@ -94,7 +100,7 @@ class FlappyBirdGame(FloatLayout):
             print(f"Bird{bird.size}, {bird.pos}")
 
     def kill_bird(self, bird):
-        self.birds_alive -= 1
+        self.birds_alive = self.birds_alive - 1 if self.birds_alive else 0
         bird.alive = False
         bird.color = [255, 1, 1, 1]
 
@@ -123,7 +129,7 @@ class FlappyBirdGame(FloatLayout):
         print("New pipe")
         print(new_pipe)
         # Přidá trubku
-        self.add_widget(new_pipe, len(self.birds) + 9)
+        self.add_widget(new_pipe, len(self.birds) + 10)  # index podle počtu widgetů (např + 10 atd) -> trubky
         self.pipes.append(new_pipe)
 
     # Odstraní trubku
@@ -146,19 +152,13 @@ class FlappyBirdGame(FloatLayout):
                 self.current_pipe = p
                 break
         self.pipes_passed += 1
-        self.score_label.text = f"Score: {self.pipes_passed} Birds alive: {self.birds_alive}"
+        self.update_label()
         # Každému přičte bod v passed_pipe()
         for b in self.birds:
             b.passed_pipe()
 
-    # Restartuje hru
-    def restart(self):
-        self.stop()
-
-    def stop(self, *args):
-        self.birds = []
-        self.pipes = []
-        Clock.unschedule(self.update)
+    def update_label(self):
+        self.score_label.text = f"Player: {self.player_control}  Birds alive: {self.birds_alive}  Score: {self.pipes_passed}"
 
     # Při zapnutí
     def prepare(self):
@@ -167,12 +167,13 @@ class FlappyBirdGame(FloatLayout):
         self.pipes_passed = 0
         self._keyboard = Window.request_keyboard(self._keyboard_closed, self)
         self._keyboard.bind(on_key_down=self._on_keyboard_down)
+
         # Přidá podlahu a pozadí (problémy s indexem ???)
         self.floor = Floor(True)
         self.add_widget(self.floor, 3000000)
         self.bg = Floor(False)
         self.add_widget(self.bg, 4000000)
-        self.paused = False
+        # self.player_control = False
 
         btn_run = Button(text='Start')
         btn_run.pos[0] = 25
@@ -180,7 +181,7 @@ class FlappyBirdGame(FloatLayout):
         self.add_widget(btn_run)
 
         btn_stop = Button(text='Stop')
-        btn_stop.pos[0] = 100
+        btn_stop.pos[0] = 80
         btn_stop.bind(on_press=self.stop)
         self.add_widget(btn_stop)
 
@@ -190,29 +191,45 @@ class FlappyBirdGame(FloatLayout):
         self.add_widget(btn_exit)
 
         population_label = Label(text="Population (1 - 100):", font_size=20, color=(0, 0, 0, 1))
-        population_label.pos[0] = 250
+        population_label.pos[0] = 205
         self.add_widget(population_label)
 
         self.population_input = TextInput(text=f"{self.population}", multiline=False, font_size=20, input_filter='int',
                                           halign='center')
-        self.population_input.pos[0] = 370
+        self.population_input.pos[0] = 325
         self.add_widget(self.population_input)
 
         btn_set = Button(text='Set')
-        btn_set.pos[0] = 445
+        btn_set.pos[0] = 400
         btn_set.bind(on_press=self.submit)
         self.add_widget(btn_set)
 
-        btn_pause = Button(text='Pause')
-        btn_pause.pos[0] = 500
-        btn_pause.bind(on_press=self.pause)
-        self.add_widget(btn_pause)
+        btn_player = Button(text='Player')
+        btn_player.pos[0] = 455
+        btn_player.bind(on_press=self.player_control_toggle)
+        self.add_widget(btn_player)
 
-        self.score_label = Label(text=f"Score: {self.pipes_passed} Birds alive: {self.birds_alive}", font_size=40,
-                                 color=(0, 0, 0, 1))
+        btn_retrain = Button(text='Retrain')
+        btn_retrain.pos[0] = 510
+        btn_retrain.bind(on_press=self.retrain)
+        self.add_widget(btn_retrain)
+
+        self.score_label = Label(
+            text=f"Player: {self.player_control}  Birds alive: {self.birds_alive}  Score: {self.pipes_passed}",
+            font_size=40,
+            color=(0, 0, 0, 1))
         self.score_label.pos[0] = int(Window.width / 2)
         self.score_label.pos[1] = int(Window.height - 100 - self.score_label.size[1])
         self.add_widget(self.score_label)
+
+    # Restartuje hru
+    def restart(self):
+        self.stop()
+
+    def stop(self, *args):
+        self.birds = []
+        self.pipes = []
+        Clock.unschedule(self.update)
 
     def create_ai(self):
         self.bird_ai = BirdAI(Window.height, Window.width, 48)
@@ -230,22 +247,22 @@ class FlappyBirdGame(FloatLayout):
     def exit(self, *args):
         App.get_running_app().stop()
 
-    def pause(self, *args):
-        if self.pause:
-            Clock.unschedule(self.update)
-        if self.pause is False:
-            self.schedule_int()
+    def player_control_toggle(self, *args):
+        self.player_control = not self.player_control
+        print(self.player_control)
+        self.update_label()
+
+    def retrain(self, *args):
+        self.stop()
+        self.create_ai()
+        self.run()
 
     # Spustí hru
     def run(self, *args):
         self.restart()
         self.prepare()
         if not self.bird_ai:
-            training_ai_label = Label(text="Training AI, may take some time...", font_size=40, color=(0, 0, 0, 1))
-            training_ai_label.pos = (Window.width / 2, Window.height / 2)
-            self.add_widget(training_ai_label)
             self.create_ai()
-            self.remove_widget(training_ai_label)
         # Přidá na začátek ptáky
         self.add_bird(self.population)
         self.schedule_int()
@@ -279,13 +296,13 @@ class FlappyBirdGame(FloatLayout):
         # Pro každého ptáka
         for bird in self.birds:
             if bird.alive:
-
-                data = [bird.center_y,
-                        self.current_pipe.x - bird.x + bird.width,
-                        self.current_pipe.pipe_center - self.current_pipe.GAP_SIZE / 2,
-                        self.current_pipe.pipe_center + self.current_pipe.GAP_SIZE / 2]
-                if self.bird_ai.predict(data) > 0.5:
-                    bird.jump()
+                if not bird.human:
+                    data = [bird.center_y,
+                            self.current_pipe.x - bird.x + bird.width,
+                            self.current_pipe.pipe_center - self.current_pipe.GAP_SIZE / 2,
+                            self.current_pipe.pipe_center + self.current_pipe.GAP_SIZE / 2]
+                    if self.bird_ai.predict(data) > 0.5:
+                        bird.jump()
 
                 # Pohyb textury
                 bird.change_texture()

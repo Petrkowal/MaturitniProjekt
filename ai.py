@@ -51,7 +51,7 @@ def validate(data, win_hei, win_width):
 
 
 class BirdAI:
-    TRAIN_DATA = 100000
+    TRAIN_DATA = 50000
 
     def __init__(self, window_height, window_width, bird_height):
         self.bird_height = bird_height

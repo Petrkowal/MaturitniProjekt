@@ -50,6 +50,7 @@ class Bird(Image):
         self.bird_id = bird_id
         # Bool - žije ještě?
         self.alive = True
+        self.human = False
         # Nastavení score na 0
         self.score = 0
         # Načtení v2 -> list s cestami k obrázkům (pro Image - změní se source)
