@@ -310,11 +310,11 @@ if __name__ == "__main__":
     # nastavení obrazovky ???
 
     # Config.set('graphics', 'fullscreen', False)
-    # Config.set('graphics', 'width', 1000)
-    # Config.set('graphics', 'height', 500)
+    Config.set('graphics', 'width', 1800)
+    Config.set('graphics', 'height', 1000)
     # Config.set('graphics', 'minimum_width', '1000')
     # Config.set('graphics', 'window_state', 'maximized')
     # Config.set('graphics', 'borderless', True)
-    # Config.set('graphics', 'resizable', True)
-    # Config.write()
+    Config.set('graphics', 'resizable', False)
+    Config.write()
     MainApp().run()

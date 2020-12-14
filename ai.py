@@ -10,13 +10,13 @@ def create_model():
                  ["dense", {"units": 8, "activation": "relu"}]]
 
     model = tf.keras.models.Sequential()
+    tf.keras.backend.set_floatx('float64')
     for i, layer in enumerate(structure):
         if i == 0:
             model.add(tf.keras.layers.Dense(layer[1]["units"], activation=layer[1]["activation"], input_dim=4))
         else:  # Hidden layers
             model.add(tf.keras.layers.Dense(layer[1]["units"], activation=layer[1]["activation"]))
     model.add(tf.keras.layers.Dense(1, activation="tanh"))
-
     model.compile(loss='mean_squared_error', optimizer='adam', metrics=["accuracy"])
 
     return model
@@ -76,7 +76,7 @@ class BirdAI:
         #       y - upper pipe
 
     def train_model(self):
-        self.model.fit(self.dataset[0], self.dataset[1], epochs=3, batch_size=32, shuffle=True)
+        self.model.fit(self.dataset[0], self.dataset[1], epochs=1, batch_size=32, shuffle=True)
 
     def predict(self, data):
         data = validate(data, self.window_height, self.window_width)
