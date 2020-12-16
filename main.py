@@ -40,7 +40,7 @@ class FlappyBirdGame(FloatLayout):
     MIN_WIDTH = 600
     MIN_HEIGHT = 800
     pipes_passed = NumericProperty(0)
-    FPS = 60.0
+    FPS = 60
 
     def __init__(self, **kwargs):
         super(FlappyBirdGame, self).__init__(**kwargs)
@@ -59,6 +59,7 @@ class FlappyBirdGame(FloatLayout):
         self.population_input = None
         Window.bind(on_resize=self.on_window_resize)
         self.bird_ai = None
+        self._keyboard = None
 
         self.prepare()
 
@@ -125,7 +126,7 @@ class FlappyBirdGame(FloatLayout):
         # x pozice -> vpravo od obrazovky
         new_pipe.center_x = Window.width + new_pipe.width
         # y pozice -> náhodně - nejblíž 150px od okraje / podlahy
-        new_pipe.pipe_center = randint(250, Window.height - 150)
+        new_pipe.pipe_center = randint(350, Window.height - 150)
         print("New pipe")
         print(new_pipe)
         # Přidá trubku
@@ -262,7 +263,8 @@ class FlappyBirdGame(FloatLayout):
         self.restart()
         self.prepare()
         if not self.bird_ai:
-            self.create_ai()
+            if not self.player_control or not self.population == 1:
+                self.create_ai()
         # Přidá na začátek ptáky
         self.add_bird(self.population)
         self.schedule_int()
