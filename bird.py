@@ -110,26 +110,18 @@ class Bird(Image):
         # d = 2 * self.vel * 1 / 70 - 20 * 1 / 70 * (self.tick_count * 2 - 1)
         # d = -(4 / 7) * self.tick_count + 2 / 7 * self.vel + 2 / 7
 
-        # d = -4 * self.tick_count + 2 * self.vel + 2
-        # d /= 7
-
-        # Maximum = y + 58
-        # Možné y pro skok (ai - if) -> min --- max:
-        # Min: bird.y - bird.height < self.current_pipe.pipe_center - self.current_pipe.GAP_SIZE / 2 + 20
-        # Max: bird.y < self.current_pipe.pipe_center + self.current_pipe.GAP_SIZE / 2 - 58 - bird.height - 60
-        # Min: bird.y < pipe.center - 80
-        # Max: bird.y < pipe.center - 66
-        # Jump => pipe.center -73 +- 7
+        d = -4 * self.tick_count + 2 * self.vel + 2
+        d /= 7
 
         # Náročnější - (a nahoru, b nahoru):
         # A = 4 * 0.175
         # B = 2 * 0.5
         # d = -(2 / 7) * self.tick_count + 2 * self.vel / 7 + 2 / 7
 
-        print(self.center_y)
+        # print(self.center_y)
 
-        d = -2 * self.tick_count + 2 * self.vel + 2
-        d /= 7
+        # d = -2 * self.tick_count + 2 * self.vel + 2
+        # d /= 7
 
         # Jestli po přičtení d bude pořád na obrazovce, přičte d. Jinak nastaví pozici těsně pod okraj
         self.center_y = self.center_y + d if self.center_y - d < Window.height - self.height / 2 else Window.height - self.height / 2 - 2

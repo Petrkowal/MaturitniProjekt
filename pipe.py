@@ -15,7 +15,6 @@ class Pipe(Widget):
     GAP_SIZE = NumericProperty(200)
     # = center_y
     pipe_center = NumericProperty(700)
-
     # Načte texturu
     pipe_body_texture = Image(source="img/pipe.png").texture
     # Souřadnice horní textury (otočení textury) + ... ???
@@ -29,10 +28,14 @@ class Pipe(Widget):
 
     def __init__(self, **kwargs):
         super(Pipe, self).__init__(**kwargs)
+        self.velocity = 5
 
     # Pohyb trubky
     def move(self):
-        self.center_x -= 5
+        self.center_x -= self.velocity
+
+    def set_velocity(self, vel):
+        self.velocity = vel
 
     # Metoda vyvolaná, když je trubka passnutá
     def passed(self):

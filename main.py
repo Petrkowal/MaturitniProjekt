@@ -39,6 +39,7 @@ class FlappyBirdGame(FloatLayout):
     bg = ObjectProperty(None)
     MIN_WIDTH = 600
     MIN_HEIGHT = 800
+    MAX_GAME_SPEED = 8
     pipes_passed = NumericProperty(0)
     FPS = 60
 
@@ -60,6 +61,7 @@ class FlappyBirdGame(FloatLayout):
         Window.bind(on_resize=self.on_window_resize)
         self.bird_ai = None
         self._keyboard = None
+        self.game_speed = 0
 
         self.prepare()
 
@@ -145,9 +147,14 @@ class FlappyBirdGame(FloatLayout):
         self.kill_bird(bird)
         self.any_bird_alive()
 
+    # volá metodu passed() dané trubky, která nastaví is_passed na True
     def passed(self, pipe):
-        # volá metodu passed() dané trubky, která nastaví is_passed na True
+        if self.game_speed <= self.MAX_GAME_SPEED:  # MAX = 8 -- log 1.015 (8 / 5) = 32
+            self.game_speed *= 1.015  # 1.02 => 24 | 1.01 => 47 (48) | 1.015 => 32
+        self.floor.set_scroll_speed(self.game_speed)
         pipe.passed()
+        for p in self.pipes:
+            p.set_velocity(self.game_speed)
         for p in self.pipes:
             if not p.is_passed:
                 self.current_pipe = p
@@ -175,6 +182,7 @@ class FlappyBirdGame(FloatLayout):
         self.bg = Floor(False)
         self.add_widget(self.bg, 4000000)
         # self.player_control = False
+        self.game_speed = 5
 
         btn_run = Button(text='Start')
         btn_run.pos[0] = 25

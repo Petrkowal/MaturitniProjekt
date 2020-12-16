@@ -19,13 +19,13 @@ class Floor(Widget):
     # Cesty k obrázkům
     IMG_FLOOR = "img/base.png"
     IMG_BG = "img/bg.png"
-
     # Parametr is_floor, defaultně na True
 
     def __init__(self, is_floor=True, **kwargs):
         super(Floor, self).__init__(**kwargs)
         # Pokud je is_floor True, nastaví se pro podlahu cesta, scroll_speed a rozměry
-        if is_floor:
+        self.is_floor = is_floor
+        if self.is_floor:
             self.img_src = self.IMG_FLOOR
             self.scroll_speed = 1.136
             self.size_hint = 1, None
@@ -45,8 +45,13 @@ class Floor(Widget):
     def on_size(self, *args):
         self.tex.uvsize = (self.width / self.tex.width, -1)
 
-    # Scrollování textury podle dt (uplynulý čas od posledního průběhu smyčky)
+    def set_scroll_speed(self, vel):
+        if self.is_floor:
+            self.scroll_speed = 1.136 / (vel / 5)
+        else:
+            self.scroll_speed = 10 / (vel / 5)
 
+    # Scrollování textury podle dt (uplynulý čas od posledního průběhu smyčky)
     def scroll(self, dt):
         self.tex.uvpos = ((self.tex.uvpos[0] + dt / self.scroll_speed), self.tex.uvpos[1])
 
