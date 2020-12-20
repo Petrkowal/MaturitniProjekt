@@ -6,12 +6,13 @@ from setuptools import sic
 
 """
     Třída Bird jako obrázek kvůli práci s texturou, parametr id
-    Funkce:
-        check_collision(self, p) - returnuje True / False + nastaví proměnnou alive na False
-        change_texture(self) - mění texturu
+    Metody:
+        check_collision(pipe) - kontroluje kolizi s trubkou returnuje True / False + nastaví proměnnou alive na False
+        change_texture() - mění texturu (mávání křídel)
         passed_pipe() - přidá score
         jump() - skočí (reset času od skoku)
-        move(dt) - pohyb (padání / skok) a rotace podle toho
+        move() - pohyb (padání / skok) a rotace
+        dead_move(vel) - s mrtvým ptákem pohne o 'vel' dozadu
 """
 
 
@@ -140,8 +141,9 @@ class Bird(Image):
             if self.angle > -90:
                 self.angle -= self.ROT_VEL / 2
 
-    def dead_move(self):
-        self.x -= 5
+    # Pohne mrtvým ptákem dozadu podle rychlosti hry (trubek)
+    def dead_move(self, vel=5):
+        self.x -= vel
 
     def __str__(self):
         return f"\n\n" \

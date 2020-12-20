@@ -7,8 +7,9 @@ from kivy.core.window import Window
     Třída Floor - widget - zajišťuje scrollování textury podlahy / pozadí
     Parametr - is_floor -> nastavení rozměrů a rychlosti scrollování (pro zem / pozadí)
     Funkce:
-        on_size(self, *args)
-        scroll(self, dt)
+        on_size() - podle rozměrů okna
+        set_scroll_speed(vel) - nastaví rychlost scrollování podle rychlosti hry
+        scroll(dt) - scrolluje podle času mezi jednotlivými snímky (podle FPS)
 """
 
 

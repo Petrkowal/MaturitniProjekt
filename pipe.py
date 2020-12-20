@@ -3,10 +3,11 @@ from kivy.properties import BooleanProperty, NumericProperty, ListProperty
 from kivy.uix.image import Image
 
 """
-    Třída Pipe (Widget)
+    Třída Pipe (Widget) - trubka
     Metody:
-        move() - pohne trubkou doleva
-        passed() - když projde trubkou, přičte score
+        move() - pohne trubkou doleva o určitou vzdálenost (podle rychlosti)
+        set_velocity(vel) - nastaví rychlost pohybu vlevo
+        passed() - když projde trubkou, nastaví ji jako passnutou / neaktivní
 """
 
 
