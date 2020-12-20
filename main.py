@@ -54,6 +54,9 @@ class FlappyBirdGame(FloatLayout):
     current_pipe = ObjectProperty(None)  # Objekt -> následující trubka
     bg = ObjectProperty(None)  # Pozadí (kvůli scrollování)
     pipes_passed = NumericProperty(0)  # Počet úspěšně překonaných překážek (trubek) - score
+    # Nastavení NN
+    train_data = NumericProperty(50000)
+    epochs = NumericProperty(2)
     # Konstanty
     WIDTH = 1800  # Šířka okna
     HEIGHT = 1000  # Výška okna
@@ -65,6 +68,8 @@ class FlappyBirdGame(FloatLayout):
         # Pole pro objekty
         self.birds = []
         self.pipes = []
+        self.train_data = 50000
+        self.epochs = 2  # Epochy (NN)
         self.current_pipe = None
         self.player_control = False  # Bool - bude hrát (i) člověk?
         self.floor = None
@@ -74,6 +79,8 @@ class FlappyBirdGame(FloatLayout):
         self.pipes_passed = 0
         self.score_label = None  # Label pro score
         self.population_input = None  # Uživatelský vstup - populace
+        self.train_data_input = None  # Vstup - train data
+        self.epochs_input = None  # Vstup - epochy
         self.bird_ai = None  # Objekt pro model
         self._keyboard = None  # Klávesnice...
         self.game_speed = 0  # Rychlost hry
@@ -143,7 +150,7 @@ class FlappyBirdGame(FloatLayout):
         print(new_pipe)
         # Přidá trubku - index nastaví na počet ptáků + počet ostatních widgetů (button, label atd)
         # Kvůli správnému zobrazení trubky => mezi pozadím a podlahou
-        self.add_widget(new_pipe, len(self.birds) + 10)  # index podle počtu widgetů (např + 10 atd) -> trubky
+        self.add_widget(new_pipe, len(self.birds) + 14)  # index podle počtu widgetů (např + 10 atd) -> trubky
         self.pipes.append(new_pipe)
 
     # Odstraní trubku
@@ -218,7 +225,7 @@ class FlappyBirdGame(FloatLayout):
 
         # Label - populace
         population_label = Label(text="Population (1 - 100):", font_size=20, color=(0, 0, 0, 1))
-        population_label.pos[0] = 205
+        population_label.pos = 205, 10
         self.add_widget(population_label)
 
         # TextInput - populace
@@ -227,21 +234,44 @@ class FlappyBirdGame(FloatLayout):
         self.population_input.pos[0] = 325
         self.add_widget(self.population_input)
 
+        # Label - Train data
+        train_data_label = Label(text="Train data (opt 50 000):", font_size=20, color=(0, 0, 0, 1))
+        train_data_label.pos = 470, 10
+        self.add_widget(train_data_label)
+
+        # TextInput - Train data
+        self.train_data_input = TextInput(text=f"{self.train_data}", multiline=False, font_size=20, input_filter='int',
+                                          halign='center')
+        self.train_data_input.pos[0] = 605
+        self.train_data_input.width += 40
+        self.add_widget(self.train_data_input)
+
+        # Label - Epochs
+        epochs_label = Label(text="Epochs (<10):", font_size=20, color=(0, 0, 0, 1))
+        epochs_label.pos = 750, 10
+        self.add_widget(epochs_label)
+
+        # TextInput - Epochs
+        self.epochs_input = TextInput(text=f"{self.epochs}", multiline=False, font_size=20, input_filter='int',
+                                      halign='center')
+        self.epochs_input.pos[0] = 840
+        self.add_widget(self.epochs_input)
+
         # Button - načtení z inputu
         btn_set = Button(text='Set')
-        btn_set.pos[0] = 400
+        btn_set.pos[0] = 400 + 510
         btn_set.bind(on_press=self.submit)
         self.add_widget(btn_set)
 
         # Button - bude / nebude hrát člověk
         btn_player = Button(text='Player')
-        btn_player.pos[0] = 455
+        btn_player.pos[0] = 455 + 510
         btn_player.bind(on_press=self.player_control_toggle)
         self.add_widget(btn_player)
 
         # Button - znovu vytvoří model (natrénuje znovu a na jiných datech)
         btn_retrain = Button(text='Retrain')
-        btn_retrain.pos[0] = 510
+        btn_retrain.pos[0] = 510 + 510
         btn_retrain.bind(on_press=self.retrain)
         self.add_widget(btn_retrain)
 
@@ -251,7 +281,8 @@ class FlappyBirdGame(FloatLayout):
             font_size=40,
             color=(0, 0, 0, 1))
         self.score_label.pos[0] = int(Window.width / 2)
-        self.score_label.pos[1] = int(Window.height - 100 - self.score_label.size[1])
+        # self.score_label.pos[1] = int(Window.height - 100 - self.score_label.size[1])
+        self.score_label.pos[1] = int(Window.height - 50)
         self.add_widget(self.score_label)
 
     # Stopne hru - vymaže listy objektů a přeruší clock
@@ -262,7 +293,7 @@ class FlappyBirdGame(FloatLayout):
 
     # Vytvoří neuronovou síť a natrénuje ji
     def create_ai(self):
-        self.bird_ai = BirdAI(Window.height, Window.width, 48)
+        self.bird_ai = BirdAI(Window.height, Window.width, 48, self.train_data, self.epochs)
 
     # Načte data z inputu a aplikuje je; zastaví
     def submit(self, *args):
@@ -273,6 +304,18 @@ class FlappyBirdGame(FloatLayout):
         else:
             self.population = int(self.population_input.text)
             self.birds_alive = self.population
+        if int(self.train_data_input.text) > 1000000:
+            self.train_data = 1000000
+        elif int(self.train_data_input.text) < 1:
+            self.train_data_input = 1
+        else:
+            self.train_data = int(self.train_data_input.text)
+        if int(self.epochs_input.text) > 10:
+            self.epochs = 10
+        elif int(self.epochs_input.text) < 1:
+            self.epochs = 1
+        else:
+            self.epochs = int(self.epochs_input.text)
         self.stop()
 
     # Vypne aplikaci
