@@ -75,7 +75,7 @@ class FlappyBirdGame(FloatLayout):
         self.player_control = False  # Bool - bude hrát (i) člověk?
         self.floor = None
         self.bg = None
-        self.bird_count = 20  # Populace bude 2 na začátku
+        self.bird_count = 20  # Populace bude 20 na začátku
         self.birds_alive = self.bird_count  # Počet živých
         self.pipes_passed = 0
         self.score_label = None  # Label pro score
