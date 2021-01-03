@@ -81,9 +81,10 @@ class BirdAI:
         self.create_ai()
         # inputs:
         #       bird y
-        #       vzdálenost bird - pipe
         #       y - lower pipe
-        #       y - upper pipe
+        # NAKONEC NEPOTŘEBNÉ:
+        #           vzdálenost bird - pipe
+        #           y - upper pipe
 
     def create_ai(self):
         self.model = create_model()
