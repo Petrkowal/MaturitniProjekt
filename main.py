@@ -68,17 +68,18 @@ class FlappyBirdGame(FloatLayout):
         # Pole pro objekty
         self.birds = []
         self.pipes = []
+        self.btns_labels = []
         self.train_data = 50000
         self.epochs = 2  # Epochy (NN)
         self.current_pipe = None
         self.player_control = False  # Bool - bude hrát (i) člověk?
         self.floor = None
         self.bg = None
-        self.population = 2  # Populace bude 2 na začátku
-        self.birds_alive = self.population  # Počet živých
+        self.bird_count = 2  # Populace bude 2 na začátku
+        self.birds_alive = self.bird_count  # Počet živých
         self.pipes_passed = 0
         self.score_label = None  # Label pro score
-        self.population_input = None  # Uživatelský vstup - populace
+        self.bird_count_input = None  # Uživatelský vstup - populace
         self.train_data_input = None  # Vstup - train data
         self.epochs_input = None  # Vstup - epochy
         self.bird_ai = None  # Objekt pro model
@@ -192,6 +193,7 @@ class FlappyBirdGame(FloatLayout):
     # Příprava hry
     def prepare(self):
         self.clear_widgets()  # Smazání všech widgetů
+        self.btns_labels = []
         self.pipes_passed = 0  # Reset passnutých trubek
         # Nastavení klávesnice
         self._keyboard = Window.request_keyboard(self._keyboard_closed, self)
@@ -209,70 +211,76 @@ class FlappyBirdGame(FloatLayout):
         btn_run = Button(text='Start')
         btn_run.pos[0] = 25
         btn_run.bind(on_press=self.run)
+        self.btns_labels.append(btn_run)
         self.add_widget(btn_run)
 
         # Button - zastavení hry
         btn_stop = Button(text='Stop')
-        btn_stop.pos[0] = 80
+        btn_stop.pos[0] = self.btns_labels[-1].pos[0] + self.btns_labels[-1].width + 10
         btn_stop.bind(on_press=self.stop)
+        self.btns_labels.append(btn_stop)
         self.add_widget(btn_stop)
 
-        # Button - vypnutí aplikace
-        btn_exit = Button(text='Exit')
-        btn_exit.pos[0] = Window.width - 75
-        btn_exit.bind(on_press=self.exit)
-        self.add_widget(btn_exit)
-
         # Label - populace
-        population_label = Label(text="Population (1 - 100):", font_size=20, color=(0, 0, 0, 1))
-        population_label.pos = 205, 10
-        self.add_widget(population_label)
+        bird_count_label = Label(text="Birds (<100):", font_size=20, color=(0, 0, 0, 1))
+        bird_count_label.pos = self.btns_labels[-1].pos[0] + self.btns_labels[-1].width + \
+                               bird_count_label.width, 10
+        self.btns_labels.append(bird_count_label)
+        self.add_widget(bird_count_label)
 
         # TextInput - populace
-        self.population_input = TextInput(text=f"{self.population}", multiline=False, font_size=20, input_filter='int',
+        self.bird_count_input = TextInput(text=f"{self.bird_count}", multiline=False, font_size=20, input_filter='int',
                                           halign='center')
-        self.population_input.pos[0] = 325
-        self.add_widget(self.population_input)
+        self.bird_count_input.pos[0] = self.btns_labels[-1].pos[0] + self.btns_labels[-1].width + 35
+        self.btns_labels.append(self.bird_count_input)
+        self.add_widget(self.bird_count_input)
 
         # Label - Train data
         train_data_label = Label(text="Train data (opt 50 000):", font_size=20, color=(0, 0, 0, 1))
-        train_data_label.pos = 470, 10
+        train_data_label.pos = 420, 10
+        self.btns_labels.append(train_data_label)
         self.add_widget(train_data_label)
 
         # TextInput - Train data
         self.train_data_input = TextInput(text=f"{self.train_data}", multiline=False, font_size=20, input_filter='int',
                                           halign='center')
-        self.train_data_input.pos[0] = 605
+        self.train_data_input.pos[0] = 555
         self.train_data_input.width += 40
+        self.btns_labels.append(self.train_data_input)
         self.add_widget(self.train_data_input)
 
         # Label - Epochs
         epochs_label = Label(text="Epochs (<10):", font_size=20, color=(0, 0, 0, 1))
-        epochs_label.pos = 750, 10
+        epochs_label.pos = 700, 10
+        self.btns_labels.append(epochs_label)
         self.add_widget(epochs_label)
 
         # TextInput - Epochs
         self.epochs_input = TextInput(text=f"{self.epochs}", multiline=False, font_size=20, input_filter='int',
                                       halign='center')
-        self.epochs_input.pos[0] = 840
+        self.epochs_input.pos[0] = 790
+        self.btns_labels.append(self.epochs_input)
         self.add_widget(self.epochs_input)
 
         # Button - načtení z inputu
         btn_set = Button(text='Set')
-        btn_set.pos[0] = 400 + 510
+        btn_set.pos[0] = 860
         btn_set.bind(on_press=self.submit)
+        self.btns_labels.append(btn_set)
         self.add_widget(btn_set)
 
         # Button - bude / nebude hrát člověk
         btn_player = Button(text='Player')
-        btn_player.pos[0] = 455 + 510
+        btn_player.pos[0] = self.btns_labels[-1].pos[0] + self.btns_labels[-1].width + 10
         btn_player.bind(on_press=self.player_control_toggle)
+        self.btns_labels.append(btn_player)
         self.add_widget(btn_player)
 
         # Button - znovu vytvoří model (natrénuje znovu a na jiných datech)
         btn_retrain = Button(text='Retrain')
-        btn_retrain.pos[0] = 510 + 510
+        btn_retrain.pos[0] = self.btns_labels[-1].pos[0] + self.btns_labels[-1].width + 10
         btn_retrain.bind(on_press=self.retrain)
+        self.btns_labels.append(btn_retrain)
         self.add_widget(btn_retrain)
 
         # Score label: Hráč, Počet živých, Score
@@ -283,7 +291,15 @@ class FlappyBirdGame(FloatLayout):
         self.score_label.pos[0] = int(Window.width / 2)
         # self.score_label.pos[1] = int(Window.height - 100 - self.score_label.size[1])
         self.score_label.pos[1] = int(Window.height - 50)
+        self.btns_labels.append(self.score_label)
         self.add_widget(self.score_label)
+
+        # Button - vypnutí aplikace
+        btn_exit = Button(text='Exit')
+        btn_exit.pos[0] = Window.width - 75
+        btn_exit.bind(on_press=self.exit)
+        self.btns_labels.append(btn_exit)
+        self.add_widget(btn_exit)
 
     # Stopne hru - vymaže listy objektů a přeruší clock
     def stop(self, *args):
@@ -297,13 +313,13 @@ class FlappyBirdGame(FloatLayout):
 
     # Načte data z inputu a aplikuje je; zastaví
     def submit(self, *args):
-        if int(self.population_input.text) < 1:
-            self.population = 1
-        elif int(self.population_input.text) > 100:
-            self.population = 100
+        if int(self.bird_count_input.text) < 1:
+            self.bird_count = 1
+        elif int(self.bird_count_input.text) > 100:
+            self.bird_count = 100
         else:
-            self.population = int(self.population_input.text)
-            self.birds_alive = self.population
+            self.bird_count = int(self.bird_count_input.text)
+            self.birds_alive = self.bird_count
         if int(self.train_data_input.text) > 1000000:
             self.train_data = 1000000
         elif int(self.train_data_input.text) < 1:
@@ -340,10 +356,10 @@ class FlappyBirdGame(FloatLayout):
         self.prepare()
         if not self.bird_ai:  # Pokud ještě není AI
             # Vytvoří AI, jestli to má cenu (když hraje jen člověk bez botů, nemá cenu zdlouhavě trénovat AI)
-            if not self.player_control or not self.population == 1:
+            if not self.player_control or not self.bird_count == 1:
                 self.create_ai()
         # Přidá na začátek ptáky
-        self.add_bird(self.population)
+        self.add_bird(self.bird_count)
         self.schedule_int()
 
     # Zapne hodiny (clock)
@@ -374,12 +390,10 @@ class FlappyBirdGame(FloatLayout):
 
         for bird in self.birds:  # Pro každého ptáka
             if bird.alive:  # Jestli žije
-                if not bird.human:  # Jestli není ovládaný člověkem
+                if not bird.human:  # A jestli není ovládaný člověkem
                     # Připraví data pro NN
                     data = [bird.center_y,  # Pozice y daného ptáka
-                            self.current_pipe.x - bird.x + bird.width,  # Vzdálenost od začátku trubky
-                            self.current_pipe.pipe_center - self.current_pipe.GAP_SIZE / 2,  # y spodní trubky
-                            self.current_pipe.pipe_center + self.current_pipe.GAP_SIZE / 2]  # y horní trubky
+                            self.current_pipe.pipe_center - self.current_pipe.GAP_SIZE / 2]  # y horní trubky
                     if self.bird_ai.predict(data) > 0.5:  # Jestli NN vyhodnotí, že má skočit, skočí
                         bird.jump()
 
