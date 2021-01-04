@@ -124,6 +124,7 @@ class FlappyBirdGame(FloatLayout):
         self.birds_alive = self.birds_alive - 1 if self.birds_alive else 0
         bird.alive = False
         bird.color = [255, 1, 1, 1]
+        self.update_label()
 
     # Odstraní ptáka
     def remove_bird(self, bird):
@@ -195,6 +196,7 @@ class FlappyBirdGame(FloatLayout):
         self.clear_widgets()  # Smazání všech widgetů
         self.btns_labels = []
         self.pipes_passed = 0  # Reset passnutých trubek
+        self.birds_alive = self.bird_count
         # Nastavení klávesnice
         self._keyboard = Window.request_keyboard(self._keyboard_closed, self)
         self._keyboard.bind(on_key_down=self._on_keyboard_down)
@@ -336,12 +338,14 @@ class FlappyBirdGame(FloatLayout):
 
     # Spustí hru
     def run(self, *args):
+        self.submit()
         self.stop()
         self.prepare()
         if not self.bird_ai:  # Pokud ještě není AI
             self.create_ai()  # Vytvoří AI
         # Přidá na začátek ptáky
         self.add_bird(self.bird_count)
+        self.update_label()
         self.schedule_int()
 
     # Zapne hodiny (clock)
