@@ -332,6 +332,7 @@ class FlappyBirdGame(FloatLayout):
 
     # Vytvoří nové AI a restartuje hru
     def retrain(self, *args):
+        self.submit()
         self.stop()
         self.create_ai()
         self.run()
@@ -378,9 +379,9 @@ class FlappyBirdGame(FloatLayout):
             if bird.alive:  # Jestli žije
                 if not bird.human:  # A jestli není ovládaný člověkem
                     # Připraví data pro NN
-                    data = [bird.center_y,  # Pozice y daného ptáka
+                    data = [bird.center_y,  # y ptáčka
                             self.current_pipe.pipe_center - self.current_pipe.GAP_SIZE / 2]  # y horní trubky
-                    if self.bird_ai.predict(data) > 0.5:  # Jestli NN vyhodnotí, že má skočit, skočí
+                    if self.bird_ai.predict(data) > 0.5:  # Pokud model vrátí hodnotu větší než 0.5, ptáček skočí
                         bird.jump()
 
                 # Pohyb a změna textury (mávání křídel)

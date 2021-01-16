@@ -15,7 +15,7 @@ def create_model(structure=None):
     model = tf.keras.models.Sequential()
     tf.keras.backend.set_floatx('float64')
     for i, layer in enumerate(structure):
-        if i == 0:  # První vrstva (vstupní)
+        if i == 0:  # Vstupní vrstva
             model.add(tf.keras.layers.Dense(layer[1]["units"], activation=layer[1]["activation"], input_dim=2))
         else:  # Skryté vrstvy
             model.add(tf.keras.layers.Dense(layer[1]["units"], activation=layer[1]["activation"]))
