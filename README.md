@@ -5,6 +5,3 @@ Na používám knihovnu Kivy, na neuronovou síť TensorFlow (Keras).
 Hra je prakticky hotová.\
 Neuronová síť funguje (zatím se učí dopředu na začátku z náhodných dat, když začne hrát, je již naučená).\
 Aplikaci je ještě třeba dodělat...
-
-Requirements.txt pro zpracování přes CPU.\
-Reqirements-gpu.txt pro zpracování přes GPU (musí podporovat HW).
